@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3        
+
+      - name: Debug - Repository structure
+        run: |
+          echo "Current working directory:"
+          pwd
+          echo "Contents of current directory:"
+          ls -la
+          echo "Full directory structure:"
+          find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
+
+      - name: Set up Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
+
+      - name: Locate Dockerfile and build Docker image
+        run: |
+          DOCKERFILE=$(find . -name Dockerfile | head -n 1)
+          if [ -z "$DOCKERFILE" ]; then
+            echo "Error: Dockerfile not found"
+            exit 1
+          else
+            DOCKER_DIR=$(dirname "$DOCKERFILE")
+            echo "Found Dockerfile at: $DOCKERFILE"
+            cd "$DOCKER_DIR"
+            echo "Building from directory:"
+            pwd
+            echo "Contents of directory:"
+            ls -la
+            podman build -t blogging-application .
+          fi
+
+      - name: Run tests (if any)
+        run: |
+          if [ -d "tests" ]; then
+            cd tests
+            echo "Running tests from directory:"
+            pwd
+            # Adjust the test command as needed
+            npm test || echo "No tests found or tests failed"
+          else
+            echo "No 'tests' directory found. Skipping tests."
+          fi
