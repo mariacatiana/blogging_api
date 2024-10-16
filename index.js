@@ -37,7 +37,7 @@ if (process.env.SWAGGER_ENABLED === 'true') {
     app.use('/logout', require('./routes/logout'));
 }
 
-const mongoURI = 'mongodb+srv://catiana:blog-app@blog-app-cluster.wtjbk.mongodb.net/?retryWrites=true&w=majority&appName=blog-app-cluster';
+const mongoURI = process.env.MONGO_URL;
 
 mongoose.connect(mongoURI)
     .then(() => console.log('MongoDB connected'))
