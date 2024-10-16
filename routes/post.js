@@ -19,7 +19,7 @@ const uploadMiddleware = multer({ storage });
  * @swagger
  * /post:
  *   post:
- *     summary: Create a new post
+ *     category: Create a new post
  *     consumes:
  *       - multipart/form-data
  *     parameters:
@@ -39,10 +39,10 @@ const uploadMiddleware = multer({ storage });
  *         required: true
  *         description: The title of the post
  *       - in: formData
- *         name: summary
+ *         name: category
  *         type: string
  *         required: true
- *         description: The summary of the post
+ *         description: The category of the post
  *       - in: formData
  *         name: content
  *         type: string
@@ -58,7 +58,7 @@ const uploadMiddleware = multer({ storage });
  *               type: string
  *             title:
  *               type: string
- *             summary:
+ *             category:
  *               type: string
  *             content:
  *               type: string
@@ -80,7 +80,7 @@ router.post('/post', uploadMiddleware.single('cover'), async (req, res) => {
  * @swagger
  * /post/{id}:
  *   put:
- *     summary: Update a post
+ *     category: Update a post
  *     consumes:
  *       - multipart/form-data
  *     parameters:
@@ -106,10 +106,10 @@ router.post('/post', uploadMiddleware.single('cover'), async (req, res) => {
  *         required: true
  *         description: The title of the post
  *       - in: formData
- *         name: summary
+ *         name: category
  *         type: string
  *         required: true
- *         description: The summary of the post
+ *         description: The category of the post
  *       - in: formData
  *         name: content
  *         type: string
@@ -125,7 +125,7 @@ router.post('/post', uploadMiddleware.single('cover'), async (req, res) => {
  *               type: string
  *             title:
  *               type: string
- *             summary:
+ *             category:
  *               type: string
  *             content:
  *               type: string
@@ -149,7 +149,7 @@ router.put('/post/:id', uploadMiddleware.single('cover'), async (req, res) => {
  * @swagger
  * /post:
  *   get:
- *     summary: Get a list of posts
+ *     category: Get a list of posts
  *     responses:
  *       200:
  *         description: List of posts
@@ -162,7 +162,7 @@ router.put('/post/:id', uploadMiddleware.single('cover'), async (req, res) => {
  *                 type: string
  *               title:
  *                 type: string
- *               summary:
+ *               category:
  *                 type: string
  *               content:
  *                 type: string
@@ -180,7 +180,7 @@ router.get('/post', async (req, res) => {
  * @swagger
  * /post/{id}:
  *   get:
- *     summary: Get a post by ID
+ *     category: Get a post by ID
  *     parameters:
  *       - in: path
  *         name: id
@@ -198,7 +198,7 @@ router.get('/post', async (req, res) => {
  *               type: string
  *             title:
  *               type: string
- *             summary:
+ *             category:
  *               type: string
  *             content:
  *               type: string

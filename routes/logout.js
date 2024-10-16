@@ -6,7 +6,7 @@ const router = express.Router();
  * @swagger
  * /logout:
  *   post:
- *     summary: Logout a user
+ *     category: Logout a user
  *     responses:
  *       200:
  *         description: User logged out successfully

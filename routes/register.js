@@ -5,7 +5,7 @@ const router = express.Router();
  * @swagger
  * /register:
  *   post:
- *     summary: Register a new user
+ *     category: Register a new user
  *     requestBody:
  *       required: true
  *       content:

@@ -6,7 +6,7 @@ const PostSchema = new Schema({
     type: String,
     required: true
   },
-  summary: {
+    category: {
     type: String,
     required: true
   },

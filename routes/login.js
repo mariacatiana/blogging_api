@@ -9,7 +9,7 @@ const secret = process.env.SECRET_KEY;
  * @swagger
  * /login:
  *   post:
- *     summary: Login a user
+ *     category: Login a user
  *     requestBody:
  *       required: true
  *       content:

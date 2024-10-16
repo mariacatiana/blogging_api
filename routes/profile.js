@@ -5,7 +5,7 @@ const router = express.Router();
  * @swagger
  * /profile:
  *   get:
- *     summary: Get user profile
+ *     category: Get user profile
  *     responses:
  *       200:
  *         description: User profile information

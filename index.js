@@ -50,7 +50,7 @@ app.post('/register', async (req, res) => {
     console.log('Received POST /register');
     if (!username || !password) {
         return res.status(400).json({ error: 'Username and password are required.' });
-    }    
+    }
     try {
         const userDoc = await User.create({
             username,
@@ -59,13 +59,12 @@ app.post('/register', async (req, res) => {
         res.status(200).json(userDoc);
     } catch (e) {
         console.error('Error registering user:', e);
-        if (e.code === 11000) { 
-            // Code 11000 is a MongoDB error code indicating a duplicate key error
+        if (e.code === 11000) {
             return res.status(409).json({ error: 'Username already exists. Please choose a different username.' });
         }
         res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
     }
-});  
+});
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -131,20 +130,22 @@ app.post('/post', uploadMiddleware.single('cover'), async (req, res) => {
             return res.status(401).json({ error: 'Invalid token' });
         }
 
-        const { title, summary, content } = req.body;
-        console.log('Post data:', { title, summary, content });
+        const { title, category, content } = req.body;
+        console.log('Post data:', { title, category, content });
 
-        if (!title || !summary || !content) {
+        if (!title || !category || !content) {
             console.log('Missing required fields');
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
         let newPath = null;
+        let fileNameWithExt = null;
         if (req.file) {
             const { originalname, path } = req.file;
             const parts = originalname.split('.');
             const ext = parts[parts.length - 1];
             newPath = path + '.' + ext;
+            fileNameWithExt = req.file.filename + '.' + ext;
             fs.renameSync(path, newPath);
             console.log('File uploaded:', newPath);
         }
@@ -152,9 +153,9 @@ app.post('/post', uploadMiddleware.single('cover'), async (req, res) => {
         try {
             const postDoc = await Post.create({
                 title,
-                summary,
+                category,
                 content,
-                cover: req.file ? req.file.filename : null,
+                cover: req.file ? `/uploads/${fileNameWithExt}` : null,
                 author: info.id, 
             });
 
@@ -180,18 +181,20 @@ app.put('/post/:id', uploadMiddleware.single('cover'), async (req, res) => {
             return res.status(401).json({ error: 'Invalid token' });
         }
 
-        const { title, summary, content } = req.body;
+        const { title, category, content } = req.body;
 
-        if (!title || !summary || !content) {
+        if (!title || !category || !content) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
         let newPath = null;
+        let fileNameWithExt = null;
         if (req.file) {
             const { originalname, path } = req.file;
             const parts = originalname.split('.');
             const ext = parts[parts.length - 1];
             newPath = path + '.' + ext;
+            fileNameWithExt = req.file.filename + '.' + ext;
             fs.renameSync(path, newPath);
         }
 
@@ -207,10 +210,10 @@ app.put('/post/:id', uploadMiddleware.single('cover'), async (req, res) => {
             }
 
             postDoc.title = title;
-            postDoc.summary = summary;
+            postDoc.category = category;
             postDoc.content = content;
             if (req.file) {
-                postDoc.cover = req.file.filename;
+                postDoc.cover = `/uploads/${fileNameWithExt}`;
             }
 
             await postDoc.save();
@@ -222,8 +225,6 @@ app.put('/post/:id', uploadMiddleware.single('cover'), async (req, res) => {
         }
     });
 });
-
-
 
 app.get('/post', async (req, res) => {
     try {
@@ -239,21 +240,29 @@ app.get('/post', async (req, res) => {
 
 app.get('/post/:id', async (req, res) => {
     const { id } = req.params;
+    
+    if (!id || id === 'undefined') {
+      return res.status(400).json({ error: 'Invalid post ID' });
+    }
+  
     try {
-        const post = await Post.findById(id).populate('author', 'username');
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
-        res.json(post);
+      const post = await Post.findById(id);
+      if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      res.json(post);
     } catch (error) {
-        console.error('Error fetching post:', error);
-        res.status(500).json({ error: 'Internal server error' });
+      console.error('Error fetching post:', error);
+      if (error.name === 'CastError') {
+        return res.status(400).json({ error: 'Invalid post ID format' });
+      }
+      res.status(500).json({ error: 'Internal server error' });
     }
 });
 
 app.delete('/post/:id', async (req, res) => {
-    const { id } = req.params;
     const { token } = req.cookies;
+    const { id } = req.params;
 
     if (!token) {
         return res.status(401).json({ error: 'Not authenticated' });
@@ -265,27 +274,27 @@ app.delete('/post/:id', async (req, res) => {
         }
 
         try {
-            const post = await Post.findById(id);
-            if (!post) {
+            const postDoc = await Post.findById(id);
+            if (!postDoc) {
                 return res.status(404).json({ error: 'Post not found' });
             }
 
-            if (post.author.toString() !== info.id) {
-                return res.status(403).json({ error: 'Unauthorized' });
+            if (postDoc.author.toString() !== info.id) {
+                return res.status(403).json({ error: 'Not authorized to delete this post' });
             }
 
-            await Post.findByIdAndDelete(id);
-            res.json({ message: 'Post deleted successfully' });
+            await postDoc.deleteOne();
+            res.status(204).end();
         } catch (error) {
             console.error('Error deleting post:', error);
-            res.status(500).json({ error: 'Internal server error' });
+            res.status(500).json({ error: 'Error deleting post' });
         }
     });
 });
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.listen(4000, () => {
+    console.log('Server is running on http://localhost:4000');
 });
+
 
 

@@ -6,7 +6,7 @@ const Post = require('../models/post');
  * @swagger
  * /post/{id}:
  *   delete:
- *     summary: Delete a post
+ *     category: Delete a post
  *     description: Deletes a post by its ID. Only the author of the post can delete it. Authentication is required via a token stored in cookies.
  *     tags: [Posts]
  *     parameters:
